@@ -60,10 +60,6 @@ def pegasos_svm_train(x_train, y_train, pegasos_lambda, max_iterations=20):
 
 
 def hinge_loss(w, x, y):
-    """
-    hinge_loss(w, x, y) = max(0, 1-ywx)
-    """
-
     return max(0, 1-(y*numpy.dot(w, x)))
 
 
@@ -78,7 +74,6 @@ def evaluate_pegasos(x_data, y_data, pegasos_lambda, w):
     """
     running_sum = 0
     for i in range(len(y_data)):
-        # running_sum += max(0, 1-(y_data[i]*numpy.dot(w, x_data[i])))
         running_sum += hinge_loss(w, x_data[i], y_data[i])
 
     return ((pegasos_lambda / 2) * (numpy.linalg.norm(w)**2)) + ((1/len(x_data))*running_sum)
@@ -95,26 +90,6 @@ def run_pegasos_train(x_train, y_train, pegasos_lambda, iteration_range):
 
     return numpy.array(p_plot)
 
-
-"""
-SVM NOTES:
-
-weight vector is the "model"
-==> prediction: y_pred = w.dot(x) + bias; in our case we are dealing with zero bias
-y > mx + b
-y < mx + b
-IF you have a test set where you know the ground-truth, multiply the gt and pred and if it's less than 0, it's 
-    misclassified 
-optimal parameters --> reproducicibility
-
-TECHNICALLY:
-+1 class: y_pred = w.dot(x) + b > +1
--1 class: y_pred = w.dot(x) + b < -1
-
-==> y_gt * y_pred < 1 is the number misclassified
-"""
-
-
 def pegasos_svm_test(x_data, y_data, pegasos_lamdba, w):
     """
     evaluation metric function for determining accuracy
@@ -127,9 +102,8 @@ def pegasos_svm_test(x_data, y_data, pegasos_lamdba, w):
     """
     k = 0
     for i in range(len(x_data)):
-        # val_check = hinge_loss(w, x_data[i], y_data[i])
         y_pred = numpy.dot(w, x_data[i])
-        val_check = y_data[i] * y_pred  # y_data[i] is +1 or -1
+        val_check = y_data[i] * y_pred
         if val_check < 0:
             k += 1
     return k / len(x_data)
@@ -166,9 +140,7 @@ def run_diff_lambdas(x_train, y_train, x_val, y_val, max_iterations, pegasos_lam
 
 def find_support_vectors(x_data, y_data, w):
     k = 0
-    # for i in range(len(x_data)):
     for x_sample, y_sample in zip(x_data, y_data):
-        # hl = hinge_loss(w, x_data[i], y_data[i])
         hl = hinge_loss(w, x_sample, y_sample)
         if hl != 0:
             k += 1
@@ -202,8 +174,6 @@ def multi_class(k, x_train, y_train, pegasos_lambda, max_iterations=20):
 def pegasos_multiclass_test(x_data, y_data, all_w):
     k = 0
     for i in range(len(x_data)):
-        # y_pred1 = numpy.dot(all_w[0], x_data[i])
-        # y_pred2 = numpy.dot(all_w[1], x_data[i])
         y_pred = numpy.argmax(numpy.dot(all_w, x_data[i]))
         val_check = y_data[i] * y_pred
         if val_check < 0:
@@ -211,8 +181,7 @@ def pegasos_multiclass_test(x_data, y_data, all_w):
     return k / len(x_data)
 
 def main():
-    filename = "/Users/ldubrosa/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_train.txt"
-    # filename = "/Users/mo/src-control/projects/kwellerprep/privates/maddie/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_train.txt"
+    filename = "spam_train.txt"
     content = read_data(filename)
     train = content[:4000]
     validate = content[4000:]
@@ -267,10 +236,6 @@ def main():
 
 
     # pegasos_lambdas = [numpy.log2(pl) for pl in pegasos_lambdas]
-    """
-    log_b { b } = 1
-    log_b { b^n } = n
-    """
     # log_pl = list(range(-9, 2))
     # plt.rcParams['figure.figsize'] = [5, 5]
     # plt.scatter(log_pl, train_error, color="pink")
@@ -286,8 +251,7 @@ def main():
     # print(min_val_error, min_val_err_lambda)
 
 
-    # filename2 = "/Users/ldubrosa/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_test.txt"
-    # filename2 = "/Users/mo/src-control/projects/kwellerprep/privates/maddie/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_test.txt"
+    # filename2 = "spam_test.txt"
     # test = read_data(filename2)
     #
     # threshold = 30
@@ -315,44 +279,4 @@ def main():
 
 
 main()
-
-
-"""
-EMBEDDING NOTES:
-one-hot encoding
-
-vocab = [job, cat, dog, animal]
-
-cat = [0, 1, 0, 0]
-dog = [0, 0, 1, 0]
-animal = [0, 0, 0, 1]
-
-cat.dot(job) = 0
-cat.dot(dog) = 0
-
-king = [...]
-man = [...]
-
-king - man = queen
-
-us = [...]
-uk = [...]
-russia = [...]
-
-us.dot(uk) = 0.9
-us.dot(russia) = 0.1
-
-==> a.dot(b) = ||a||*||b||*cos(theta)
-==> a.dot(b) == 0 implies a and b are orthogonal ==> they're unrelated
-==> a.dot(b) == -1 implies that they are complete opposites bc ||a|| = ||b||
-==> a.dot(b) == 1 implies that they are completely similar bc they go in the same direction!!!
-
-cosine similarity:
-||cos(theta)|| = a.dot(b) / (||a||*||b||) ==> 0 ≤ cos(theta) ≤ 1
-
-f(x, y) = x^2 - 3xy
-
-p(X) = f(X)
-p(X, Y) = f(X, Y)
-"""
 
