@@ -175,7 +175,7 @@ def run_n_iter(content, n):
 
 
 def main():
-    filename = "/Users/ldubrosa/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_train.txt"
+    filename = "spam_train.txt"
     content = read_data(filename)
     train = content[:4000]
     validate = content[4000:]
@@ -257,7 +257,7 @@ def main():
     feature_vectors, y_train = build_vector(content, vocab)
     k, w, iterations = perceptron_train(feature_vectors, y_train, max_iter=100)
 
-    filename2 = "/Users/ldubrosa/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_test.txt"
+    filename2 = "spam_test.txt"
     test = read_data(filename2)
 
     feature_vectors_test, y_test = build_vector(test, vocab)
