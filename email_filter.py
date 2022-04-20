@@ -28,7 +28,6 @@ def build_vocabulary(content, threshold):
         for j in range(1, len(word_list)):
             vocab_dict[word_list[j]] += 1
 
-    # todo: potential bug
     vocab_arr = [word for word, count in vocab_dict.items() if count >= threshold]
     # vocab_arr = []
     # for word in vocab_dict:
@@ -41,12 +40,6 @@ def build_vocabulary(content, threshold):
 def get_y_train(content):
     print("Function deprecated, use build_vector()")
     return
-    # y_train = []
-    # for i in range(len(content)):
-    #     toadd = -1 if int(content[i][0]) == 0 else int(content[i][0])
-    #     y_train.append(toadd)
-    # return numpy.array(y_train)
-
 
 def build_vector(content, vocab):
     """
@@ -74,20 +67,6 @@ def build_vector(content, vocab):
 
 
 def is_misclassified(w, x_train, y_train):
-    """
-    NUMPY BROADCASTING:
-
-    w = yx + b
-
-    if b is a scalar, and we're adding it to a vector equation, then b gets broadcasted
-    Ex:
-
-    b = 4
-
-    w = y*x + b
-    ==> b = [4, ..., 4]
-    the above equation WILL work
-    """
     y_pred = numpy.zeros(len(y_train))
     k = 0
 
@@ -97,20 +76,11 @@ def is_misclassified(w, x_train, y_train):
     for i in range(len(y_pred)):
         if y_pred[i] != y_train[i]:
             k += 1
-            # optimization
-            w = w + y_train[i] * x_train[i]  # w = w + yx
-            # w = numpy.add(w, y_train[i] * x_train[i])  # same as the line above it
-            # update rule is a big bottleneck
-            # for j in range(len(x_train[0])):
-            #     w[j] = w[j] + y_train[i]*x_train[i][j]
+            w = w + y_train[i] * x_train[i] 
     return k, w
 
 
 def train_data(x_train, y_train, max_iter=200):
-    """
-    1 pass through the entire dataset is called an epoch
-    5 iterations --> 5 epochs
-    """
     w = numpy.zeros(len(x_train[0]))
     k = 1
     iterations = 0
@@ -140,24 +110,6 @@ def perceptron_test(w, test_data, y_actual):
 
 
 def most_predictive(vocab, w, num_words):
-    """
-    w =     [w1, w2, ..., wn]
-    vocab = [v1, v2, ..., vn]
-
-    solution 0: brute force
-    sort w first, then look for the top k number of words and then go about finding the words you want
-
-    solution 1: O(nlogn) for sort
-    zip them together to create a list (w_i, v_i), and then sort on w_1
-    and then slice
-
-    solution 2: argmin / argmax only return 1 element
-    np.argmax(nparray) => index where the max occurs
-    np.argmin(nparray) => index where min occurs
-
-    for a sorted list of element indeces, we use np.argsort
-    """
-    # solution 2:
     w_sorted_index = numpy.argsort(w)
     top_positive_index = w_sorted_index[len(w_sorted_index)-num_words:][::-1]
     top_negative_index = w_sorted_index[:num_words]
@@ -223,13 +175,11 @@ def iterations_avg_percpetron(training_data, y_train):
 
 def run_n_iter(content, n):
     train = content[:n]
-    # validate = content[n:]
 
     threshold = 30
     vocab = build_vocabulary(train, threshold)
 
     x_train, y_train = build_vector(train, vocab)
-    # x_validate, y_validate = build_vector(validate, vocab)
 
     regular_iter = iterations_regular_percpetron(x_train, y_train)
     avg_iter = iterations_avg_percpetron(x_train, y_train)
@@ -238,12 +188,9 @@ def run_n_iter(content, n):
 
 def main():
     filename = "/Users/ldubrosa/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_train.txt"
-    # filename = "/Users/mo/src-control/projects/kwellerprep/privates/maddie/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_train.txt"
     content = read_traindata(filename)
     train = content[:4000]
     validate = content[4000:]
-    # write_data(filename2, train)
-    # write_data(filename3, validate)
 
     # threshold = 30
     # vocab = build_vocabulary(train, threshold)
@@ -316,8 +263,7 @@ def main():
     feature_vectors, y_train = build_vector(content, vocab)
     k, w, iterations = train_data(feature_vectors, y_train, max_iter=150)
 
-    # filename2 = "/Users/ldubrosa/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_test.txt"
-    filename2 = "/Users/mo/src-control/projects/kwellerprep/privates/maddie/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_test.txt"
+    filename2 = "/Users/ldubrosa/maddie-coding/homework/machine_learning/project_1/ps1_data/spam_test.txt"
     test = read_traindata(filename2)
 
     feature_vectors_test, y_test = build_vector(test, vocab)
